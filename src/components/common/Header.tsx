@@ -20,13 +20,16 @@ export const Header: React.FC = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-
   const currentUser = AuthService.getCurrentUserFromStorage() || {
-    firstName: 'John',
-    lastName: 'Mataa',
+    username: 'demo',
+    name: 'Demo User',
     role: 'INVESTIGATOR',
-    email: 'john.mataa@iZyane.com'
+    email: 'demo@alertsystem.com'
   };
+
+  // Extract name from the user object
+  const displayName = currentUser.name || `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim() || currentUser.username || 'User';
+  const userRole = currentUser.role || 'USER';
 
   const notifications = [
     {
@@ -174,18 +177,17 @@ export const Header: React.FC = () => {
             <button
               onClick={() => setIsProfileOpen(!isProfileOpen)}
               className="flex items-center space-x-3 p-2 text-sm font-medium text-gray-700 hover:text-gray-900"
-            >
-              <div className="h-8 w-8 bg-indigo-600 rounded-full flex items-center justify-center">
+            >              <div className="h-8 w-8 bg-indigo-600 rounded-full flex items-center justify-center">
                 <span className="text-white text-sm font-medium">
-                  {currentUser.firstName?.[0]}{currentUser.lastName?.[0]}
+                  {displayName.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()}
                 </span>
               </div>
               <div className="hidden md:block text-left">
                 <div className="text-sm font-medium">
-                  {currentUser.firstName} {currentUser.lastName}
+                  {displayName}
                 </div>
                 <div className="text-xs text-gray-500">
-                  {currentUser.role}
+                  {userRole.replace('_', ' ')}
                 </div>
               </div>
               <ChevronDown className="h-4 w-4" />
