@@ -47,10 +47,9 @@ export class CaseService {
   static async getCaseById(id: string): Promise<ApiResponse<Case>> {
     return ApiService.get<Case>(`/api/cases/${id}`);
   }
-
   // Create new case
   static async createCase(caseData: CreateCaseForm): Promise<ApiResponse<Case>> {
-    return ApiService.post<Case>('/api/cases', caseData);
+    return ApiService.post<Case>('/api/cases/create', caseData);
   }
 
   // Update case
@@ -62,10 +61,9 @@ export class CaseService {
   static async deleteCase(id: string): Promise<ApiResponse<void>> {
     return ApiService.delete<void>(`/api/cases/${id}`);
   }
-
   // Change case status
-  static async changeStatus(id: string, status: string, comments?: string): Promise<ApiResponse<Case>> {
-    return ApiService.patch<Case>(`/api/cases/${id}/status`, { status, comments });
+  static async changeStatus(id: string, status: string, comment?: string): Promise<ApiResponse<Case>> {
+    return ApiService.put<Case>(`/api/cases/${id}/status`, { status, comment });
   }
 
   // Assign case
@@ -234,5 +232,10 @@ export class CaseService {
   static async getCaseStatistics(dateRange?: { start: string; end: string }): Promise<ApiResponse<any>> {
     const params = dateRange ? { startDate: dateRange.start, endDate: dateRange.end } : {};
     return ApiService.get<any>('/api/cases/statistics', params);
+  }
+
+  // Get cases by status
+  static async getCasesByStatus(status: string): Promise<ApiResponse<Case[]>> {
+    return ApiService.get<Case[]>(`/api/cases/by-status/${status}`);
   }
 }

@@ -1,17 +1,18 @@
 // Case Types
 export const CASE_TYPES = {
+  FRAUD_DETECTION: 'FRAUD_DETECTION',
   AML: 'AML',
-  FRAUD: 'FRAUD',
   SANCTIONS: 'SANCTIONS'
 } as const;
 
 // Case Status
 export const CASE_STATUS = {
   DRAFT: 'DRAFT',
-  READY: 'READY', 
+  READY_FOR_ASSIGNMENT: 'READY_FOR_ASSIGNMENT',
+  UNDER_INVESTIGATION: 'UNDER_INVESTIGATION',
   PENDING_APPROVAL: 'PENDING_APPROVAL',
-  IN_INVESTIGATION: 'IN_INVESTIGATION',
-  COMPLETED: 'COMPLETED'
+  CLOSED: 'CLOSED',
+  REJECTED: 'REJECTED'
 } as const;
 
 // Task Status
@@ -57,10 +58,11 @@ export const RISK_THRESHOLDS = {
 // Status Colors
 export const STATUS_COLORS = {
   [CASE_STATUS.DRAFT]: 'bg-gray-100 text-gray-800',
-  [CASE_STATUS.READY]: 'bg-blue-100 text-blue-800',
+  [CASE_STATUS.READY_FOR_ASSIGNMENT]: 'bg-blue-100 text-blue-800',
   [CASE_STATUS.PENDING_APPROVAL]: 'bg-yellow-100 text-yellow-800',
-  [CASE_STATUS.IN_INVESTIGATION]: 'bg-orange-100 text-orange-800',
-  [CASE_STATUS.COMPLETED]: 'bg-green-100 text-green-800'
+  [CASE_STATUS.UNDER_INVESTIGATION]: 'bg-orange-100 text-orange-800',
+  [CASE_STATUS.CLOSED]: 'bg-green-100 text-green-800',
+  [CASE_STATUS.REJECTED]: 'bg-red-100 text-red-800'
 } as const;
 
 // Priority Colors

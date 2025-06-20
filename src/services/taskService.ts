@@ -41,10 +41,14 @@ export class TaskService {
   static async getTaskById(id: string): Promise<ApiResponse<Task>> {
     return ApiService.get<Task>(`/api/tasks/${id}`);
   }
-
   // Create new task
-  static async createTask(taskData: CreateTaskForm): Promise<ApiResponse<Task>> {
-    return ApiService.post<Task>('/api/tasks', taskData);
+  static async createTask(taskData: {
+    taskName: string;
+    assignee: string;
+    status: string;
+    caseId: string;
+  }): Promise<ApiResponse<Task>> {
+    return ApiService.post<Task>('/api/tasks/create', taskData);
   }
 
   // Update task
@@ -66,15 +70,13 @@ export class TaskService {
   static async releaseTask(id: string): Promise<ApiResponse<Task>> {
     return ApiService.post<Task>(`/api/tasks/${id}/release`);
   }
-
   // Assign task to user
-  static async assignTask(id: string, assigneeId: string, comments?: string): Promise<ApiResponse<Task>> {
-    return ApiService.post<Task>(`/api/tasks/${id}/assign`, { assigneeId, comments });
+  static async assignTask(taskId: string, assignee: string, comment?: string): Promise<ApiResponse<Task>> {
+    return ApiService.post<Task>('/api/tasks/assign', { taskId, assignee, comment });
   }
-
   // Complete task
-  static async completeTask(id: string, completionData: CompleteTaskForm): Promise<ApiResponse<Task>> {
-    return ApiService.post<Task>(`/api/tasks/${id}/complete`, completionData);
+  static async completeTask(taskId: string, variables: Record<string, any>): Promise<ApiResponse<Task>> {
+    return ApiService.post<Task>('/api/tasks/complete', { taskId, variables });
   }
 
   // Start task
@@ -96,21 +98,9 @@ export class TaskService {
   static async cancelTask(id: string, reason: string): Promise<ApiResponse<Task>> {
     return ApiService.post<Task>(`/api/tasks/${id}/cancel`, { reason });
   }
-
   // Get my tasks (assigned to current user)
-  static async getMyTasks(
-    page: number = 1,
-    size: number = 20,
-    status?: string[]
-  ): Promise<PaginatedResponse<Task>> {
-    const params = {
-      page: page - 1,
-      size,
-      assignedToMe: true,
-      ...(status && { status: status.join(',') })
-    };
-
-    return ApiService.getPaginated<Task>('/api/tasks', params);
+  static async getMyTasks(assignee: string): Promise<ApiResponse<Task[]>> {
+    return ApiService.get<Task[]>(`/api/tasks/my/${assignee}`);
   }
 
   // Get available tasks (unassigned tasks for current user's groups)
@@ -126,35 +116,13 @@ export class TaskService {
 
     return ApiService.getPaginated<Task>('/api/tasks', params);
   }
-
   // Get group tasks
-  static async getGroupTasks(
-    groupName: string,
-    page: number = 1,
-    size: number = 20
-  ): Promise<PaginatedResponse<Task>> {
-    const params = {
-      page: page - 1,
-      size,
-      group: groupName
-    };
-
-    return ApiService.getPaginated<Task>('/api/tasks', params);
-  }
+  static async getGroupTasks(groupId: string): Promise<ApiResponse<Task[]>> {
+    return ApiService.get<Task[]>(`/api/tasks/group/${groupId}`);  }
 
   // Get tasks by case ID
-  static async getTasksByCase(
-    caseId: string,
-    page: number = 1,
-    size: number = 20
-  ): Promise<PaginatedResponse<Task>> {
-    const params = {
-      page: page - 1,
-      size,
-      caseId
-    };
-
-    return ApiService.getPaginated<Task>('/api/tasks', params);
+  static async getTasksByCase(caseId: string): Promise<ApiResponse<Task[]>> {
+    return ApiService.get<Task[]>(`/api/tasks/by-case/${caseId}`);
   }
 
   // Get overdue tasks

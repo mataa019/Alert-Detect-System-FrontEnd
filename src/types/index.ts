@@ -231,42 +231,31 @@ export interface PaginatedResponse<T> extends ApiResponse<T[]> {
 
 // Form Types
 export interface CreateCaseForm {
-  title: string;
-  description: string;
-  type: keyof typeof CASE_TYPES;
+  caseType: keyof typeof CASE_TYPES;
   priority: keyof typeof PRIORITY_LEVELS;
-  assignedTo: string;
-  dueDate?: string;
-  amount?: number;
-  currency?: string;
-  customerId?: string;
-  tags: string[];
-  evidence?: File[];
+  description: string;
+  riskScore: number;
+  customerDetails: {
+    customerId: string;
+    customerName: string;
+  };
 }
 
 export interface UpdateCaseForm extends Partial<CreateCaseForm> {
   status?: keyof typeof CASE_STATUS;
-  supervisorId?: string;
-  comments?: string;
+  comment?: string;
 }
 
 export interface CreateTaskForm {
-  title: string;
-  description: string;
-  type: keyof typeof TASK_TYPES;
-  priority: keyof typeof PRIORITY_LEVELS;
+  taskName: string;
+  assignee: string;
+  status: keyof typeof TASK_STATUS;
   caseId: string;
-  assignedTo?: string;
-  assignedGroup?: string;
-  dueDate?: string;
-  estimatedHours?: number;
 }
 
 export interface CompleteTaskForm {
-  comments: string;
-  decision?: 'APPROVE' | 'REJECT' | 'ESCALATE';
-  variables?: Record<string, any>;
-  actualHours?: number;
+  taskId: string;
+  variables: Record<string, any>;
 }
 
 // Component Props Types
