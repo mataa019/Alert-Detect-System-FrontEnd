@@ -59,40 +59,31 @@ export function requiresApproval(riskScore: number): boolean {
   return riskScore >= RISK_THRESHOLDS.HIGH;
 }
 
-// Get status progression
+// Get status progression - Updated to match backend case statuses
 export function getNextStatus(currentStatus: keyof typeof CASE_STATUS): keyof typeof CASE_STATUS | null {
   const progression = {
-    [CASE_STATUS.DRAFT]: CASE_STATUS.READY,
-    [CASE_STATUS.READY]: CASE_STATUS.PENDING_APPROVAL,
-    [CASE_STATUS.PENDING_APPROVAL]: CASE_STATUS.IN_INVESTIGATION,
-    [CASE_STATUS.IN_INVESTIGATION]: CASE_STATUS.COMPLETED,
-    [CASE_STATUS.COMPLETED]: null
+    [CASE_STATUS.DRAFT]: CASE_STATUS.READY_FOR_ASSIGNMENT,
+    [CASE_STATUS.READY_FOR_ASSIGNMENT]: CASE_STATUS.UNDER_INVESTIGATION,
+    [CASE_STATUS.UNDER_INVESTIGATION]: CASE_STATUS.PENDING_APPROVAL,
+    [CASE_STATUS.PENDING_APPROVAL]: CASE_STATUS.CLOSED,
+    [CASE_STATUS.CLOSED]: null,
+    [CASE_STATUS.REJECTED]: null
   };
   return progression[currentStatus] || null;
 }
 
-// Validate case data
+// Validate case data - Updated to match backend requirements
 export function validateCaseData(data: any): { isValid: boolean; errors: string[] } {
   const errors: string[] = [];
   
-  if (!data.title?.trim()) {
-    errors.push('Case title is required');
-  }
-  
-  if (!data.type) {
-    errors.push('Case type is required');
-  }
-  
+  // Only description is required for creating a case
   if (!data.description?.trim()) {
     errors.push('Case description is required');
   }
   
-  if (data.riskScore < 0 || data.riskScore > 100) {
+  // Optional validation for risk score if provided
+  if (data.riskScore !== undefined && data.riskScore !== null && (data.riskScore < 0 || data.riskScore > 100)) {
     errors.push('Risk score must be between 0 and 100');
-  }
-  
-  if (!data.assignedTo) {
-    errors.push('Case must be assigned to an investigator');
   }
   
   return {

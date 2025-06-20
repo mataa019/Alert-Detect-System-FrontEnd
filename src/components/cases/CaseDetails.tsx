@@ -40,21 +40,20 @@ export const CaseDetails: React.FC = () => {
   const case_ = caseData.data;
 
   return (
-    <div className="space-y-6">
-      {/* Case Header */}
+    <div className="space-y-6">      {/* Case Header */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{case_.title}</h1>
-            <p className="text-gray-600 mt-1">Case #{case_.caseNumber}</p>
+            <h1 className="text-2xl font-bold text-gray-900">Case #{case_.caseNumber}</h1>
+            <p className="text-gray-600 mt-1">{case_.caseType?.replace(/_/g, ' ')}</p>
           </div>
           <StatusBadge status={case_.status} />
         </div>
         
         <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Type</label>
-            <p className="mt-1 text-sm text-gray-900">{case_.type}</p>
+            <label className="block text-sm font-medium text-gray-700">Case Type</label>
+            <p className="mt-1 text-sm text-gray-900">{case_.caseType?.replace(/_/g, ' ')}</p>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">Priority</label>
@@ -62,73 +61,47 @@ export const CaseDetails: React.FC = () => {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">Risk Score</label>
-            <p className="mt-1 text-sm text-gray-900">{case_.riskScore}</p>
+            <p className="mt-1 text-sm text-gray-900">{case_.riskScore || 'Not set'}</p>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">Created</label>
             <p className="mt-1 text-sm text-gray-900">{formatDate(case_.createdAt)}</p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Due Date</label>
-            <p className="mt-1 text-sm text-gray-900">
-              {case_.dueDate ? formatDate(case_.dueDate) : 'Not set'}
-            </p>
+            <label className="block text-sm font-medium text-gray-700">Entity</label>
+            <p className="mt-1 text-sm text-gray-900">{case_.entity || 'Not specified'}</p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Assigned To</label>
-            <p className="mt-1 text-sm text-gray-900">
-              {case_.assignedToUser?.firstName} {case_.assignedToUser?.lastName}
-            </p>
+            <label className="block text-sm font-medium text-gray-700">Alert ID</label>
+            <p className="mt-1 text-sm text-gray-900">{case_.alertId || 'Not specified'}</p>
           </div>
+          {case_.typology && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Typology</label>
+              <p className="mt-1 text-sm text-gray-900">{case_.typology.replace(/_/g, ' ')}</p>
+            </div>
+          )}
+          {case_.assignedToUser && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Assigned To</label>
+              <p className="mt-1 text-sm text-gray-900">
+                {case_.assignedToUser.firstName} {case_.assignedToUser.lastName}
+              </p>
+            </div>
+          )}
+          {case_.processInstanceId && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Process ID</label>
+              <p className="mt-1 text-sm text-gray-900">{case_.processInstanceId}</p>
+            </div>
+          )}
         </div>
         
         <div className="mt-6">
           <label className="block text-sm font-medium text-gray-700">Description</label>
           <p className="mt-1 text-sm text-gray-900">{case_.description}</p>
         </div>
-      </div>
-
-      {/* Customer Information */}
-      {case_.customer && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Customer Information</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Name</label>
-              <p className="mt-1 text-sm text-gray-900">{case_.customer.name}</p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Account Number</label>
-              <p className="mt-1 text-sm text-gray-900">{case_.customer.accountNumber}</p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Risk Rating</label>
-              <p className="mt-1 text-sm text-gray-900">{case_.customer.riskRating}</p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Country</label>
-              <p className="mt-1 text-sm text-gray-900">{case_.customer.country}</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Amount Information */}
-      {case_.amount && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Amount Information</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Amount</label>
-              <p className="mt-1 text-sm text-gray-900">
-                {case_.currency} {case_.amount.toLocaleString()}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Tags */}
+      </div>      {/* Tags */}
       {case_.tags && case_.tags.length > 0 && (
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Tags</h2>
@@ -140,6 +113,44 @@ export const CaseDetails: React.FC = () => {
               >
                 {tag}
               </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Comments Section */}
+      {case_.comments && case_.comments.length > 0 && (
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Comments</h2>
+          <div className="space-y-4">
+            {case_.comments.map((comment, index) => (
+              <div key={index} className="border-l-4 border-blue-200 pl-4">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium text-gray-900">
+                    {comment.authorUser?.firstName} {comment.authorUser?.lastName}
+                  </p>
+                  <p className="text-xs text-gray-500">{formatDate(comment.createdAt)}</p>
+                </div>
+                <p className="text-sm text-gray-700">{comment.content}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Audit Trail */}
+      {case_.auditTrail && case_.auditTrail.length > 0 && (
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Audit Trail</h2>
+          <div className="space-y-3">
+            {case_.auditTrail.slice(0, 5).map((entry, index) => (
+              <div key={index} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
+                <div>
+                  <p className="text-sm font-medium text-gray-900">{entry.action}</p>
+                  <p className="text-xs text-gray-500">by {entry.createdBy}</p>
+                </div>
+                <p className="text-xs text-gray-500">{formatDate(entry.createdAt)}</p>
+              </div>
             ))}
           </div>
         </div>

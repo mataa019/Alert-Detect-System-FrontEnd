@@ -1,4 +1,4 @@
-import { CASE_TYPES, CASE_STATUS, TASK_STATUS, TASK_TYPES, USER_ROLES, PRIORITY_LEVELS } from '../utils/constants';
+import { CASE_TYPES, CASE_STATUS, TASK_STATUS, TASK_TYPES, USER_ROLES, PRIORITY_LEVELS, TYPOLOGIES } from '../utils/constants';
 
 // Base Entity
 export interface BaseEntity {
@@ -22,22 +22,24 @@ export interface User extends BaseEntity {
 }
 
 // Case Interface
+// Case Interface - Updated to match backend
 export interface Case extends BaseEntity {
+  id: string;
   caseNumber: string;
-  title: string;
-  description: string;
-  type: keyof typeof CASE_TYPES;
-  status: keyof typeof CASE_STATUS;
+  caseType: keyof typeof CASE_TYPES;
   priority: keyof typeof PRIORITY_LEVELS;
-  riskScore: number;
-  assignedTo: string;
+  status: keyof typeof CASE_STATUS;
+  description: string;
+  riskScore?: number;
+  entity?: string;
+  alertId?: string;
+  typology?: keyof typeof TYPOLOGIES;
+  processInstanceId?: string;
+  assignedTo?: string;
   assignedToUser?: User;
   supervisorId?: string;
   supervisor?: User;
   dueDate?: string;
-  amount?: number;
-  currency?: string;
-  customer?: Customer;
   comments: Comment[];
   auditTrail: AuditEntry[];
   tags: string[];
@@ -211,16 +213,18 @@ export interface PaginatedResponse<T> extends ApiResponse<T[]> {
   pagination: Pagination;
 }
 
-// Form Types
+// Form Types - Updated to match backend API
 export interface CreateCaseForm {
-  caseType: keyof typeof CASE_TYPES;
-  priority: keyof typeof PRIORITY_LEVELS;
+  // Required for complete cases
+  caseType?: keyof typeof CASE_TYPES;
+  priority?: keyof typeof PRIORITY_LEVELS;
   description: string;
-  riskScore: number;
-  customerDetails: {
-    customerId: string;
-    customerName: string;
-  };
+  riskScore?: number;
+  
+  // Optional fields
+  entity?: string;
+  alertId?: string;
+  typology?: keyof typeof TYPOLOGIES;
 }
 
 export interface UpdateCaseForm extends Partial<CreateCaseForm> {

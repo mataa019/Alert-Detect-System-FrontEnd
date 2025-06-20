@@ -194,13 +194,12 @@ export const Header: React.FC = () => {
             </button>
 
             {isProfileOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                <div className="p-4 border-b border-gray-200">
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">                <div className="p-4 border-b border-gray-200">
                   <div className="text-sm font-medium text-gray-900">
-                    {currentUser.firstName} {currentUser.lastName}
+                    {displayName}
                   </div>
                   <div className="text-xs text-gray-500">
-                    {currentUser.email}
+                    {currentUser.email || `${currentUser.username}@alertsystem.com`}
                   </div>
                 </div>
                 <div className="py-1">

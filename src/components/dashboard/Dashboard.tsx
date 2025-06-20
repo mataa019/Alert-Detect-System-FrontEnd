@@ -40,57 +40,90 @@ export const Dashboard: React.FC = () => {
 
   const totalCases = cases.length;
   const activeCases = cases.filter(c => c.status !== CASE_STATUS.CLOSED && c.status !== CASE_STATUS.REJECTED).length;
-  const highRiskCases = cases.filter(c => c.riskScore >= 80).length;
+  const highRiskCases = cases.filter(c => c.riskScore !== undefined && c.riskScore >= 80).length;
   const myTasks = tasks.length;
-
-  // Calculate case type distribution
-  const casesByType = [
+  // Calculate case type distribution - filter out types with 0 cases
+  const allCaseTypes = [
     { 
       type: 'Fraud Detection', 
-      count: cases.filter(c => c.type === CASE_TYPES.FRAUD_DETECTION).length,
-      percentage: Math.round((cases.filter(c => c.type === CASE_TYPES.FRAUD_DETECTION).length / (totalCases || 1)) * 100)
+      count: cases.filter(c => c.caseType === CASE_TYPES.FRAUD_DETECTION).length,
+      key: CASE_TYPES.FRAUD_DETECTION
+    },
+    { 
+      type: 'Money Laundering', 
+      count: cases.filter(c => c.caseType === CASE_TYPES.MONEY_LAUNDERING).length,
+      key: CASE_TYPES.MONEY_LAUNDERING
+    },
+    { 
+      type: 'Suspicious Activity', 
+      count: cases.filter(c => c.caseType === CASE_TYPES.SUSPICIOUS_ACTIVITY).length,
+      key: CASE_TYPES.SUSPICIOUS_ACTIVITY
     },
     { 
       type: 'AML', 
-      count: cases.filter(c => c.type === CASE_TYPES.AML).length,
-      percentage: Math.round((cases.filter(c => c.type === CASE_TYPES.AML).length / (totalCases || 1)) * 100)
+      count: cases.filter(c => c.caseType === CASE_TYPES.AML).length,
+      key: CASE_TYPES.AML
+    },
+    { 
+      type: 'Fraud', 
+      count: cases.filter(c => c.caseType === CASE_TYPES.FRAUD).length,
+      key: CASE_TYPES.FRAUD
+    },
+    { 
+      type: 'Compliance', 
+      count: cases.filter(c => c.caseType === CASE_TYPES.COMPLIANCE).length,
+      key: CASE_TYPES.COMPLIANCE
     },
     { 
       type: 'Sanctions', 
-      count: cases.filter(c => c.type === CASE_TYPES.SANCTIONS).length,
-      percentage: Math.round((cases.filter(c => c.type === CASE_TYPES.SANCTIONS).length / (totalCases || 1)) * 100)
+      count: cases.filter(c => c.caseType === CASE_TYPES.SANCTIONS).length,
+      key: CASE_TYPES.SANCTIONS
+    },
+    { 
+      type: 'KYC', 
+      count: cases.filter(c => c.caseType === CASE_TYPES.KYC).length,
+      key: CASE_TYPES.KYC
     }
   ];
 
-  // Calculate risk distribution
-  const criticalCases = cases.filter(c => c.riskScore >= 90).length;
-  const highRiskCasesCount = cases.filter(c => c.riskScore >= 80 && c.riskScore < 90).length;
-  const mediumRiskCases = cases.filter(c => c.riskScore >= 60 && c.riskScore < 80).length;
-  const lowRiskCases = cases.filter(c => c.riskScore < 60).length;
+  // Only show case types that have cases
+  const casesByType = allCaseTypes
+    .filter(item => item.count > 0)
+    .map(item => ({
+      type: item.type,
+      count: item.count,
+      percentage: Math.round((item.count / (totalCases || 1)) * 100)
+    }));
 
+  // Calculate risk distribution - only for cases with riskScore
+  const casesWithRisk = cases.filter(c => c.riskScore !== undefined);
+  const criticalCases = casesWithRisk.filter(c => c.riskScore! >= 90).length;
+  const highRiskCasesCount = casesWithRisk.filter(c => c.riskScore! >= 80 && c.riskScore! < 90).length;
+  const mediumRiskCases = casesWithRisk.filter(c => c.riskScore! >= 60 && c.riskScore! < 80).length;
+  const lowRiskCases = casesWithRisk.filter(c => c.riskScore! < 60).length;
   const riskDistribution = [
     { 
       level: 'Critical', 
       count: criticalCases,
-      percentage: Math.round((criticalCases / (totalCases || 1)) * 100), 
+      percentage: Math.round((criticalCases / (casesWithRisk.length || 1)) * 100), 
       color: 'bg-red-500' 
     },
     { 
       level: 'High', 
       count: highRiskCasesCount,
-      percentage: Math.round((highRiskCasesCount / (totalCases || 1)) * 100), 
+      percentage: Math.round((highRiskCasesCount / (casesWithRisk.length || 1)) * 100), 
       color: 'bg-orange-500' 
     },
     { 
       level: 'Medium', 
       count: mediumRiskCases,
-      percentage: Math.round((mediumRiskCases / (totalCases || 1)) * 100), 
+      percentage: Math.round((mediumRiskCases / (casesWithRisk.length || 1)) * 100), 
       color: 'bg-yellow-500' 
     },
     { 
       level: 'Low', 
       count: lowRiskCases,
-      percentage: Math.round((lowRiskCases / (totalCases || 1)) * 100), 
+      percentage: Math.round((lowRiskCases / (casesWithRisk.length || 1)) * 100), 
       color: 'bg-green-500' 
     }
   ];
@@ -149,54 +182,63 @@ export const Dashboard: React.FC = () => {
       </div>
 
       {/* Charts and Analytics */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Case Types Distribution */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">        {/* Case Types Distribution */}
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Cases by Type</h3>
-          <div className="space-y-4">
-            {casesByType.map((item) => (
-              <div key={item.type} className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="w-3 h-3 bg-indigo-500 rounded-full"></div>
-                  <span className="text-sm font-medium text-gray-700">{item.type}</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-32 bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-indigo-500 h-2 rounded-full" 
-                      style={{ width: `${item.percentage}%` }}
-                    ></div>
+          {casesByType.length > 0 ? (
+            <div className="space-y-4">
+              {casesByType.map((item) => (
+                <div key={item.type} className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-3 h-3 bg-indigo-500 rounded-full"></div>
+                    <span className="text-sm font-medium text-gray-700">{item.type}</span>
                   </div>
-                  <span className="text-sm text-gray-600 w-8">{item.count}</span>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-32 bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-indigo-500 h-2 rounded-full" 
+                        style={{ width: `${item.percentage}%` }}
+                      ></div>
+                    </div>
+                    <span className="text-sm text-gray-600 w-8">{item.count}</span>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Risk Distribution */}
+              ))}
+            </div>
+          ) : (
+            <div className="text-center text-gray-500 py-8">
+              <p>No cases available</p>
+            </div>
+          )}
+        </div>{/* Risk Distribution */}
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Risk Distribution</h3>
-          <div className="space-y-4">
-            {riskDistribution.map((item) => (
-              <div key={item.level} className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className={`w-3 h-3 ${item.color} rounded-full`}></div>
-                  <span className="text-sm font-medium text-gray-700">{item.level}</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-32 bg-gray-200 rounded-full h-2">
-                    <div 
-                      className={`${item.color} h-2 rounded-full`} 
-                      style={{ width: `${item.percentage}%` }}
-                    ></div>
+          {casesWithRisk.length > 0 ? (
+            <div className="space-y-4">
+              {riskDistribution.map((item) => (
+                <div key={item.level} className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-3 h-3 ${item.color} rounded-full`}></div>
+                    <span className="text-sm font-medium text-gray-700">{item.level}</span>
                   </div>
-                  <span className="text-sm text-gray-600 w-8">{item.count}</span>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-32 bg-gray-200 rounded-full h-2">
+                      <div 
+                        className={`${item.color} h-2 rounded-full`} 
+                        style={{ width: `${item.percentage}%` }}
+                      ></div>
+                    </div>
+                    <span className="text-sm text-gray-600 w-8">{item.count}</span>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>        {/* Recent Activity */}
+              ))}
+            </div>
+          ) : (
+            <div className="text-center text-gray-500 py-8">
+              <p>No cases with risk scores available</p>
+            </div>
+          )}
+        </div>{/* Recent Activity */}
         <div className="lg:col-span-2">
           <RecentActivity />
         </div>

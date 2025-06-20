@@ -3,62 +3,39 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Save, 
   X, 
-  Upload, 
   AlertTriangle, 
-  DollarSign,
-  Calendar,
-  User,
   FileText,
-  Tag
+  Hash,
+  Building2,
+  Activity
 } from 'lucide-react';
 import { useCreateCase } from '../../hooks/useCases';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import { ErrorMessage } from '../common/ErrorMessage';
-import { CASE_TYPES, PRIORITY_LEVELS } from '../../utils/constants';
+import { CASE_TYPES, PRIORITY_LEVELS, TYPOLOGIES } from '../../utils/constants';
 import { validateCaseData } from '../../utils/helpers';
 import type { CreateCaseForm } from '../../types';
 
 export const CreateCase: React.FC = () => {
   const navigate = useNavigate();
   const createCaseMutation = useCreateCase();
-  
   const [formData, setFormData] = useState<CreateCaseForm>({
-    title: '',
     description: '',
-    type: 'AML',
+    caseType: 'FRAUD_DETECTION',
     priority: 'MEDIUM',
-    assignedTo: '',
-    tags: []
+    riskScore: undefined,
+    entity: '',
+    alertId: '',
+    typology: undefined
   });
-  
-  const [errors, setErrors] = useState<string[]>([]);
-  const [newTag, setNewTag] = useState('');
+    const [errors, setErrors] = useState<string[]>([]);
 
-  const handleInputChange = (field: keyof CreateCaseForm, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handleInputChange = (field: keyof CreateCaseForm, value: any) => {    setFormData(prev => ({ ...prev, [field]: value }));
     // Clear errors when user starts typing
     if (errors.length > 0) {
       setErrors([]);
     }
   };
-
-  const handleAddTag = () => {
-    if (newTag.trim() && !formData.tags.includes(newTag.trim())) {
-      setFormData(prev => ({
-        ...prev,
-        tags: [...prev.tags, newTag.trim()]
-      }));
-      setNewTag('');
-    }
-  };
-
-  const handleRemoveTag = (tagToRemove: string) => {
-    setFormData(prev => ({
-      ...prev,
-      tags: prev.tags.filter(tag => tag !== tagToRemove)
-    }));
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -76,6 +53,9 @@ export const CreateCase: React.FC = () => {
       console.error('Failed to create case:', error);
     }
   };
+
+  // Determine if this will be a complete case
+  const isCompleteCase = formData.caseType && formData.priority && formData.riskScore !== undefined;
 
   const handleCancel = () => {
     navigate('/cases');
@@ -106,18 +86,15 @@ export const CreateCase: React.FC = () => {
               >
                 {createCaseMutation.isPending ? (
                   <LoadingSpinner size="sm" />
-                ) : (
-                  <>
+                ) : (                  <>
                     <Save className="h-4 w-4 mr-2 inline" />
-                    Create Case
+                    {isCompleteCase ? 'Create & Start Workflow' : 'Save as Draft'}
                   </>
                 )}
               </button>
             </div>
           </div>
-        </div>
-
-        {/* Form */}
+        </div>        {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Error Messages */}
           {errors.length > 0 && (
@@ -127,40 +104,43 @@ export const CreateCase: React.FC = () => {
             />
           )}
 
+          {/* Case Creation Info */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <div className="flex items-start">
+              <div className="flex-shrink-0">
+                <FileText className="h-5 w-5 text-blue-400" />
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-blue-800">Case Creation Options</h3>
+                <div className="mt-2 text-sm text-blue-700">
+                  <p className="mb-1">
+                    <strong>Draft Case:</strong> You can create a case with just a description to save your progress.
+                  </p>
+                  <p>
+                    <strong>Complete Case:</strong> Fill in case type, priority, and risk score to automatically start the investigation workflow.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Basic Information */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Title */}
-            <div className="lg:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <FileText className="h-4 w-4 inline mr-1" />
-                Case Title *
-              </label>
-              <input
-                type="text"
-                value={formData.title}
-                onChange={(e) => handleInputChange('title', e.target.value)}
-                placeholder="Enter case title..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                required
-              />
-            </div>
-
-            {/* Type */}
+            {/* Case Type */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
+                <FileText className="h-4 w-4 inline mr-1" />
                 Case Type *
               </label>
               <select
-                value={formData.type}
-                onChange={(e) => handleInputChange('type', e.target.value as keyof typeof CASE_TYPES)}
+                value={formData.caseType}
+                onChange={(e) => handleInputChange('caseType', e.target.value as keyof typeof CASE_TYPES)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 required
               >
-                {Object.values(CASE_TYPES).map(type => (
-                  <option key={type} value={type}>
-                    {type} - {type === 'AML' ? 'Anti-Money Laundering' : 
-                            type === 'FRAUD' ? 'Fraud Investigation' : 
-                            'Sanctions Screening'}
+                {Object.entries(CASE_TYPES).map(([key, value]) => (
+                  <option key={key} value={value}>
+                    {value.replace(/_/g, ' ')}
                   </option>
                 ))}
               </select>
@@ -178,44 +158,76 @@ export const CreateCase: React.FC = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 required
               >
-                {Object.values(PRIORITY_LEVELS).map(priority => (
-                  <option key={priority} value={priority}>
-                    {priority}
+                {Object.entries(PRIORITY_LEVELS).map(([key, value]) => (
+                  <option key={key} value={value}>
+                    {value}
                   </option>
                 ))}
               </select>
             </div>
 
-            {/* Assigned To */}
+            {/* Risk Score */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                <User className="h-4 w-4 inline mr-1" />
-                Assign To *
+                <Activity className="h-4 w-4 inline mr-1" />
+                Risk Score (0-100)
+              </label>
+              <input
+                type="number"
+                value={formData.riskScore || ''}
+                onChange={(e) => handleInputChange('riskScore', e.target.value ? parseInt(e.target.value) : undefined)}
+                placeholder="Enter risk score..."
+                min="0"
+                max="100"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+
+            {/* Typology */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Typology
               </label>
               <select
-                value={formData.assignedTo}
-                onChange={(e) => handleInputChange('assignedTo', e.target.value)}
+                value={formData.typology || ''}
+                onChange={(e) => handleInputChange('typology', e.target.value as keyof typeof TYPOLOGIES)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                required
               >
-                <option value="">Select an investigator...</option>
-                <option value="user1">John Smith - Senior Investigator</option>
-                <option value="user2">Sarah Johnson - AML Specialist</option>
-                <option value="user3">Mike Chen - Fraud Analyst</option>
-                <option value="user4">Lisa Wang - Compliance Officer</option>
+                <option value="">Select a typology...</option>
+                {Object.entries(TYPOLOGIES).map(([key, value]) => (
+                  <option key={key} value={value}>
+                    {value.replace(/_/g, ' ')}
+                  </option>
+                ))}
               </select>
             </div>
 
-            {/* Due Date */}
+            {/* Entity */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                <Calendar className="h-4 w-4 inline mr-1" />
-                Due Date
+                <Building2 className="h-4 w-4 inline mr-1" />
+                Entity
               </label>
               <input
-                type="date"
-                value={formData.dueDate || ''}
-                onChange={(e) => handleInputChange('dueDate', e.target.value)}
+                type="text"
+                value={formData.entity || ''}
+                onChange={(e) => handleInputChange('entity', e.target.value)}
+                placeholder="Enter entity name or ID..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+
+            {/* Alert ID */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Hash className="h-4 w-4 inline mr-1" />
+                Alert ID
+              </label>
+              <input
+                type="text"
+                value={formData.alertId || ''}
+                onChange={(e) => handleInputChange('alertId', e.target.value)}
+                placeholder="Enter alert ID..."
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>
@@ -234,114 +246,6 @@ export const CreateCase: React.FC = () => {
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               required
             />
-          </div>
-
-          {/* Amount and Currency */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <DollarSign className="h-4 w-4 inline mr-1" />
-                Amount (if applicable)
-              </label>
-              <input
-                type="number"
-                value={formData.amount || ''}
-                onChange={(e) => handleInputChange('amount', e.target.value ? parseFloat(e.target.value) : undefined)}
-                placeholder="0.00"
-                step="0.01"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Currency
-              </label>
-              <select
-                value={formData.currency || 'USD'}
-                onChange={(e) => handleInputChange('currency', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-              >
-                <option value="USD">USD - US Dollar</option>
-                <option value="EUR">EUR - Euro</option>
-                <option value="GBP">GBP - British Pound</option>
-                <option value="JPY">JPY - Japanese Yen</option>
-                <option value="CAD">CAD - Canadian Dollar</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Tags */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <Tag className="h-4 w-4 inline mr-1" />
-              Tags
-            </label>
-            <div className="flex items-center space-x-2 mb-2">
-              <input
-                type="text"
-                value={newTag}
-                onChange={(e) => setNewTag(e.target.value)}
-                placeholder="Add a tag..."
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
-              />
-              <button
-                type="button"
-                onClick={handleAddTag}
-                className="px-3 py-2 text-sm font-medium text-indigo-600 border border-indigo-600 rounded-md hover:bg-indigo-50"
-              >
-                Add
-              </button>
-            </div>
-            {formData.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {formData.tags.map((tag, index) => (
-                  <span
-                    key={index}
-                    className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800"
-                  >
-                    {tag}
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveTag(tag)}
-                      className="ml-1 h-3 w-3 text-indigo-600 hover:text-indigo-800"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Evidence Upload */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <Upload className="h-4 w-4 inline mr-1" />
-              Initial Evidence (Optional)
-            </label>
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-              <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-              <p className="text-sm text-gray-600 mb-2">
-                Drag and drop files here, or click to browse
-              </p>
-              <input
-                type="file"
-                multiple
-                className="hidden"
-                onChange={(e) => {
-                  // Handle file upload
-                  console.log('Files selected:', e.target.files);
-                }}
-              />
-              <button
-                type="button"
-                className="text-sm text-indigo-600 hover:text-indigo-500 font-medium"
-              >
-                Choose Files
-              </button>
-            </div>
           </div>
         </form>
       </div>

@@ -1,8 +1,14 @@
-// Case Types
+// Case Types - Updated to match backend
 export const CASE_TYPES = {
   FRAUD_DETECTION: 'FRAUD_DETECTION',
+  MONEY_LAUNDERING: 'MONEY_LAUNDERING',
+  SUSPICIOUS_ACTIVITY: 'SUSPICIOUS_ACTIVITY',
+  COMPLIANCE_VIOLATION: 'COMPLIANCE_VIOLATION',
   AML: 'AML',
-  SANCTIONS: 'SANCTIONS'
+  FRAUD: 'FRAUD',
+  COMPLIANCE: 'COMPLIANCE',
+  SANCTIONS: 'SANCTIONS',
+  KYC: 'KYC'
 } as const;
 
 // Case Status
@@ -100,4 +106,12 @@ export const ROUTES = {
   CREATE_CASE: '/cases/create',
   PROFILE: '/profile',
   AUDIT: '/audit'
+} as const;
+
+// Typologies - New for backend alignment
+export const TYPOLOGIES = {
+  MONEY_LAUNDERING: 'MONEY_LAUNDERING',
+  TERRORIST_FINANCING: 'TERRORIST_FINANCING',
+  FRAUD: 'FRAUD',
+  SANCTIONS_VIOLATION: 'SANCTIONS_VIOLATION'
 } as const;
