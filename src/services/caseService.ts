@@ -7,7 +7,6 @@ import type {
   SortConfig,
   ApiResponse, 
   PaginatedResponse,
-  Evidence,
   Comment,
   AuditEntry
 } from '../types';
@@ -65,38 +64,14 @@ export class CaseService {
   static async changeStatus(id: string, status: string, comment?: string): Promise<ApiResponse<Case>> {
     return ApiService.put<Case>(`/api/cases/${id}/status`, { status, comment });
   }
-
   // Assign case
   static async assignCase(id: string, assigneeId: string, comments?: string): Promise<ApiResponse<Case>> {
     return ApiService.patch<Case>(`/api/cases/${id}/assign`, { assigneeId, comments });
   }
 
-  // Get case evidence
-  static async getCaseEvidence(caseId: string): Promise<ApiResponse<Evidence[]>> {
-    return ApiService.get<Evidence[]>(`/api/cases/${caseId}/evidence`);
-  }
-
-  // Upload evidence
-  static async uploadEvidence(
-    caseId: string, 
-    file: File, 
-    title: string, 
-    description: string,
-    isConfidential: boolean = false,
-    onProgress?: (progress: number) => void
-  ): Promise<ApiResponse<Evidence>> {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('title', title);
-    formData.append('description', description);
-    formData.append('isConfidential', isConfidential.toString());
-
-    return ApiService.upload<Evidence>(`/api/cases/${caseId}/evidence`, file, onProgress);
-  }
-
-  // Delete evidence
-  static async deleteEvidence(caseId: string, evidenceId: string): Promise<ApiResponse<void>> {
-    return ApiService.delete<void>(`/api/cases/${caseId}/evidence/${evidenceId}`);
+  // Get cases by status
+  static async getCasesByStatus(status: string): Promise<ApiResponse<Case[]>> {
+    return ApiService.get<Case[]>(`/api/cases/by-status/${status}`);
   }
 
   // Get case comments
@@ -231,11 +206,5 @@ export class CaseService {
   // Get case statistics
   static async getCaseStatistics(dateRange?: { start: string; end: string }): Promise<ApiResponse<any>> {
     const params = dateRange ? { startDate: dateRange.start, endDate: dateRange.end } : {};
-    return ApiService.get<any>('/api/cases/statistics', params);
-  }
-
-  // Get cases by status
-  static async getCasesByStatus(status: string): Promise<ApiResponse<Case[]>> {
-    return ApiService.get<Case[]>(`/api/cases/by-status/${status}`);
-  }
+    return ApiService.get<any>('/api/cases/statistics', params);  }
 }

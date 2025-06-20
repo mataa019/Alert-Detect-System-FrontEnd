@@ -1,13 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { CaseService } from '../services/caseService';
 import type { 
-  Case, 
   CreateCaseForm, 
   UpdateCaseForm, 
   CaseFilters, 
-  SortConfig, 
-  Evidence,
-  Comment
+  SortConfig
 } from '../types';
 
 // Query keys
@@ -20,7 +17,6 @@ export const caseKeys = {
   detail: (id: string) => [...caseKeys.details(), id] as const,
   myCases: () => [...caseKeys.all, 'my'] as const,
   approval: () => [...caseKeys.all, 'approval'] as const,
-  evidence: (caseId: string) => [...caseKeys.detail(caseId), 'evidence'] as const,
   comments: (caseId: string) => [...caseKeys.detail(caseId), 'comments'] as const,
   audit: (caseId: string) => [...caseKeys.detail(caseId), 'audit'] as const,
   related: (caseId: string) => [...caseKeys.detail(caseId), 'related'] as const,
@@ -66,16 +62,6 @@ export function useCasesForApproval(page: number = 1, size: number = 20) {
     queryKey: [...caseKeys.approval(), { page, size }],
     queryFn: () => CaseService.getCasesForApproval(page, size),
     staleTime: 1 * 60 * 1000, // 1 minute
-  });
-}
-
-// Get case evidence
-export function useCaseEvidence(caseId: string) {
-  return useQuery({
-    queryKey: caseKeys.evidence(caseId),
-    queryFn: () => CaseService.getCaseEvidence(caseId),
-    enabled: !!caseId,
-    staleTime: 5 * 60 * 1000,
   });
 }
 
@@ -180,46 +166,7 @@ export function useAssignCase() {
       queryClient.invalidateQueries({ queryKey: caseKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: caseKeys.lists() });
       queryClient.invalidateQueries({ queryKey: caseKeys.audit(id) });
-    },
-  });
-}
-
-export function useUploadEvidence() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ 
-      caseId, 
-      file, 
-      title, 
-      description, 
-      isConfidential, 
-      onProgress 
-    }: { 
-      caseId: string; 
-      file: File; 
-      title: string; 
-      description: string; 
-      isConfidential?: boolean;
-      onProgress?: (progress: number) => void;
-    }) => CaseService.uploadEvidence(caseId, file, title, description, isConfidential, onProgress),
-    onSuccess: (_, { caseId }) => {
-      queryClient.invalidateQueries({ queryKey: caseKeys.evidence(caseId) });
-      queryClient.invalidateQueries({ queryKey: caseKeys.detail(caseId) });
-    },
-  });
-}
-
-export function useDeleteEvidence() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ caseId, evidenceId }: { caseId: string; evidenceId: string }) =>
-      CaseService.deleteEvidence(caseId, evidenceId),
-    onSuccess: (_, { caseId }) => {
-      queryClient.invalidateQueries({ queryKey: caseKeys.evidence(caseId) });
-    },
-  });
+    },  });
 }
 
 export function useAddComment() {

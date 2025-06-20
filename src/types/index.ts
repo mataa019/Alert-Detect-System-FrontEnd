@@ -38,7 +38,6 @@ export interface Case extends BaseEntity {
   amount?: number;
   currency?: string;
   customer?: Customer;
-  evidence: Evidence[];
   comments: Comment[];
   auditTrail: AuditEntry[];
   tags: string[];
@@ -67,8 +66,7 @@ export interface Task extends BaseEntity {
   status: keyof typeof TASK_STATUS;
   priority: keyof typeof PRIORITY_LEVELS;
   caseId: string;
-  case?: Case;
-  assignedTo?: string;
+  case?: Case;  assignedTo?: string;
   assignedToUser?: User;
   assignedGroup?: string;
   dueDate?: string;
@@ -77,22 +75,6 @@ export interface Task extends BaseEntity {
   actualHours?: number;
   variables: Record<string, any>;
   comments: Comment[];
-}
-
-// Evidence Interface
-export interface Evidence extends BaseEntity {
-  caseId: string;
-  title: string;
-  description: string;
-  type: 'DOCUMENT' | 'TRANSACTION' | 'COMMUNICATION' | 'OTHER';
-  fileUrl?: string;
-  fileName?: string;
-  fileSize?: number;
-  mimeType?: string;
-  hash?: string;
-  isConfidential: boolean;
-  uploadedBy: string;
-  uploadedByUser?: User;
 }
 
 // Comment Interface
